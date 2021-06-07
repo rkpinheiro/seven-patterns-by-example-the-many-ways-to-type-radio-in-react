@@ -1,12 +1,39 @@
 import React from "react";
 
-const RadioGroup = (props) => {
+/** 
+ * Solution 7: RadioGroup dynamically creates RadioOption
+ * This might be the most rarely seen solution which might make it seem a bit exotic. 
+ * We add a little twist to the previously mentioned compound component pattern by mixing it with the FaaC solution. 
+ * This gives us a RadioGroup which passes down “patched” RadioOptions through its children prop.
+ * This gives us the ability to nest just as with our context and FaaC based solutions without imposing any of their stated problems. 
+
+ * The pattern has been discussed in a (tweet)[https://twitter.com/dferber90/status/935476667673440257] 
+ * and is also used within an older version of (react-radio-group)[https://github.com/chenglou/react-radio-group/tree/9a992f3bbc1bffeb1dc993e42b0f4842ab299f42]. 
+
+ * It mixes both the FaaC and compound component patterns to an extend where the RadioOption is dynamically assembled in the RadioGroup 
+ * for use in the children function only needing the value.
+
+*/
+const RadioOption = ({name, value, selectedValue, onChange, children}) => (
+  <React.Fragment>
+    <input
+      name={name}
+      type="radio"
+      checked={value === selectedValue}
+      onChange={onChange}
+      value={value}
+    />
+    {children}
+  </React.Fragment>
+);
+
+const RadioGroup = (name, value, onChange, children) => {
   return props.children({
     RadioOption: ({ children, value }) => (
       <RadioOption
-        name={props.name}
-        selectedValue={props.value}
-        onChange={props.onChange}
+        name={name}
+        selectedValue={value}
+        onChange={onChange}
         value={value}
       >
         {children}
@@ -15,19 +42,6 @@ const RadioGroup = (props) => {
   });
 };
 
-const RadioOption = (props) => (
-  <React.Fragment>
-    <input
-      name={props.name}
-      type="radio"
-      checked={props.value === props.selectedValue}
-      onChange={props.onChange}
-      value={props.value}
-    />
-    {props.children}
-  </React.Fragment>
-);
-
 class Pattern7 extends React.Component {
   constructor() {
     super();
@@ -35,7 +49,8 @@ class Pattern7 extends React.Component {
   }
 
   handleChange = (event) => {
-    this.setState({ tshirt: { size: event.target.value } });
+    const {value} = event.target
+    this.setState({ tshirt: { size: value } });
   };
 
   render() {
